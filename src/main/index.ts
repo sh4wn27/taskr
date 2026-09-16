@@ -96,6 +96,11 @@ function createWindow() {
     }
   })
 
+  // Without this, the window is pinned to whatever Space was active when it was
+  // created — toggling it from another desktop switches you back there instead
+  // of showing it on your current desktop.
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+
   // Dev: load from Vite dev server. Prod: load built file.
   if (isDev) {
     // Use 127.0.0.1 explicitly — Node 20 resolves 'localhost' to ::1 (IPv6)
