@@ -7,10 +7,11 @@ const PRIORITIES = ['high', 'medium', 'low'] as const
 interface Props {
   onAdd: (task: Task) => void
   taskCount: number
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function AddTaskForm({ onAdd, taskCount }: Props) {
-  const [open, setOpen] = useState(false)
+export function AddTaskForm({ onAdd, taskCount, open, onOpenChange }: Props) {
   const [title, setTitle] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium')
@@ -19,7 +20,7 @@ export function AddTaskForm({ onAdd, taskCount }: Props) {
 
   useEffect(() => { if (open) ref.current?.focus() }, [open])
 
-  const close = () => { setOpen(false); setTitle(''); setDueDate(''); setPriority('medium'); setCategory('') }
+  const close = () => { onOpenChange(false); setTitle(''); setDueDate(''); setPriority('medium'); setCategory('') }
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +39,7 @@ export function AddTaskForm({ onAdd, taskCount }: Props) {
   }
 
   if (!open) return (
-    <button className="add-trigger" onClick={() => setOpen(true)}>+ add task</button>
+    <button className="add-trigger" onClick={() => onOpenChange(true)}>+ add task</button>
   )
 
   return (

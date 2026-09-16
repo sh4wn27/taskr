@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Task } from '../lib/types'
 import { TaskList } from './TaskList'
 import { AddTaskForm } from './AddTaskForm'
@@ -15,6 +15,7 @@ type Filter = 'active' | 'all' | 'done'
 
 export function TasksView({ tasks, onAdd, onUpdate, onDelete, onReorder }: Props) {
   const [filter, setFilter] = useState<Filter>('active')
+  const [formOpen, setFormOpen] = useState(false)
 
   const filtered = tasks.filter(t => {
     if (filter === 'active') return !t.completed
@@ -23,6 +24,17 @@ export function TasksView({ tasks, onAdd, onUpdate, onDelete, onReorder }: Props
   })
 
   const remaining = tasks.filter(t => !t.completed).length
+
+  // Enter opens the add-task form and starts writing; ignored while already
+  // typing somewhere (e.g. editing a task title) so it doesn't steal that Enter.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const inInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
+      if (e.key === 'Enter' && !inInput && !formOpen) setFormOpen(true)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [formOpen])
 
   return (
     <div className="section-view">
@@ -38,7 +50,7 @@ export function TasksView({ tasks, onAdd, onUpdate, onDelete, onReorder }: Props
         <TaskList tasks={filtered} onUpdate={onUpdate} onDelete={onDelete} onReorder={onReorder} />
       </div>
       <div className="section-footer">
-        <AddTaskForm onAdd={onAdd} taskCount={tasks.length} />
+        <AddTaskForm onAdd={onAdd} taskCount={tasks.length} open={formOpen} onOpenChange={setFormOpen} />
       </div>
     </div>
   )

@@ -52,7 +52,8 @@ export default function App() {
     const handler = (e: KeyboardEvent) => {
       const inInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
       if (e.key === 'Escape' && !inInput) {
-        window.api.hideWindow()
+        if (view !== 'hub') setView('hub')
+        else window.api.hideWindow()
         return
       }
       if (view === 'hub' && !inInput) {
