@@ -41,7 +41,11 @@ function storeSet<K extends keyof AppStore>(key: K, value: AppStore[K]) {
 let tray: Tray | null = null
 let win: BrowserWindow | null = null
 const scheduledReminders = new Map<string, ReturnType<typeof setTimeout>>()
-const isDev = !app.isPackaged
+// electron-vite sets this env var only when running its own dev server (`electron-vite dev`).
+// app.isPackaged is NOT a reliable dev/prod check here — it stays false for a built-but-unpackaged
+// run too (e.g. launching `electron .` directly on out/ without a packager), which would otherwise
+// send that run looking for a Vite dev server that isn't there.
+const isDev = !!process.env.ELECTRON_RENDERER_URL
 
 // ── Tray icon (generated PNG) ─────────────────────────────────────────────────
 
