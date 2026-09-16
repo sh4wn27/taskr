@@ -178,6 +178,52 @@ select:focus-visible {
   letter-spacing: 0.06em;
 }
 
+.hub-upnext {
+  padding: 4px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 4px;
+}
+
+.hub-upnext-title {
+  font-size: 9px;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.hub-upnext-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  padding: 5px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.hub-upnext-row:hover .hub-upnext-label { color: var(--pink); }
+
+.hub-upnext-label {
+  flex: 1;
+  text-align: left;
+  font-size: 12px;
+  color: var(--text);
+  font-family: var(--font);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.1s;
+}
+
+.hub-upnext-due {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--font);
+  flex-shrink: 0;
+}
+.hub-upnext-due.overdue { color: var(--pink); }
+
 /* ── Section layout ─────────────────────────────────────── */
 .section-view {
   flex: 1;

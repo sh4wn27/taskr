@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import type { Task, Idea, Reminder, JournalEntry } from './lib/types'
 import { Hub } from './components/Hub'
 import { TasksView } from './components/TasksView'
@@ -7,6 +7,7 @@ import { RemindersView } from './components/RemindersView'
 import { JournalView } from './components/JournalView'
 import { ToastStack } from './components/ToastStack'
 import { useSoftDelete } from './lib/useSoftDelete'
+import { PRIORITY_ORDER } from './lib/priority'
 
 type View = 'hub' | 'tasks' | 'ideas' | 'reminders' | 'journal'
 
@@ -118,6 +119,17 @@ export default function App() {
   const upcomingReminders = reminders.filter(r => !r.completed && new Date(r.datetime) > new Date()).length
   const hasJournalToday = journal.some(e => e.date === today)
 
+  // Main-page "up next": dated tasks soonest-due first (ties broken by priority),
+  // then undated tasks by priority, capped at 5.
+  const upNextTasks = useMemo(() => {
+    const active = tasks.filter(t => !t.completed)
+    const dated = active.filter(t => t.dueDate)
+      .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!) || PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority])
+    const undated = active.filter(t => !t.dueDate)
+      .sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority])
+    return [...dated, ...undated].slice(0, 5)
+  }, [tasks])
+
   return (
     <div className="app-root">
       <div className="glass-window" ref={windowRef}>
@@ -139,6 +151,7 @@ export default function App() {
               ideaCount={ideas.length}
               upcomingReminders={upcomingReminders}
               hasJournalToday={hasJournalToday}
+              upNextTasks={upNextTasks}
             />
           )}
           {view === 'tasks' && (

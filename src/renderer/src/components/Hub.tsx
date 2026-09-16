@@ -1,3 +1,7 @@
+import type { Task } from '../lib/types'
+import { fmtDue } from '../lib/dueDate'
+import { PRI_CLR } from '../lib/priority'
+
 type NavView = 'tasks' | 'ideas' | 'reminders' | 'journal'
 
 interface Props {
@@ -6,6 +10,7 @@ interface Props {
   ideaCount: number
   upcomingReminders: number
   hasJournalToday: boolean
+  upNextTasks: Task[]
 }
 
 const ROWS: { key: string; view: NavView; label: string }[] = [
@@ -15,7 +20,7 @@ const ROWS: { key: string; view: NavView; label: string }[] = [
   { key: '4', view: 'journal', label: 'journal' },
 ]
 
-export function Hub({ onNavigate, activeTasks, ideaCount, upcomingReminders, hasJournalToday }: Props) {
+export function Hub({ onNavigate, activeTasks, ideaCount, upcomingReminders, hasJournalToday, upNextTasks }: Props) {
   const metas = [
     activeTasks > 0 ? `${activeTasks} active` : 'clear',
     ideaCount > 0 ? `${ideaCount} notes` : 'empty',
@@ -25,6 +30,21 @@ export function Hub({ onNavigate, activeTasks, ideaCount, upcomingReminders, has
 
   return (
     <div className="hub">
+      {upNextTasks.length > 0 && (
+        <div className="hub-upnext">
+          <div className="hub-upnext-title">up next</div>
+          {upNextTasks.map(t => {
+            const due = t.dueDate ? fmtDue(t.dueDate) : null
+            return (
+              <button key={t.id} className="hub-upnext-row" onClick={() => onNavigate('tasks')}>
+                <span className="pri-dot"><span style={{ background: PRI_CLR[t.priority] }} /></span>
+                <span className="hub-upnext-label">{t.title}</span>
+                {due && <span className={`hub-upnext-due ${due.overdue ? 'overdue' : ''}`}>{due.text}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
       {ROWS.map((row, i) => (
         <button key={row.key} className="hub-row" onClick={() => onNavigate(row.view)}>
           <span className="hub-key">[{row.key}]</span>

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { isToday, isTomorrow, isPast, parseISO, format } from 'date-fns'
 import type { Task, Category, Priority } from '../lib/types'
+import { fmtDue } from '../lib/dueDate'
+import { PRI_CLR } from '../lib/priority'
 
 const CAT_LABELS: Record<Category, string> = {
   academic: 'school', work: 'work', internship: 'intern',
@@ -10,16 +11,6 @@ const CAT_LABELS: Record<Category, string> = {
 }
 const CATS: Category[] = ['work', 'academic', 'internship', 'personal-project', 'personal', 'health', 'other']
 const PRIS: Priority[] = ['high', 'medium', 'low']
-const PRI_CLR: Record<Priority, string> = { high: '#FF2D78', medium: '#FFD60A', low: '#30D158' }
-
-function fmtDue(s: string) {
-  try {
-    const d = parseISO(s)
-    if (isToday(d)) return { text: 'today', overdue: false }
-    if (isTomorrow(d)) return { text: 'tmrw', overdue: false }
-    return { text: format(d, 'MMM d'), overdue: isPast(d) }
-  } catch { return { text: s, overdue: false } }
-}
 
 interface Props {
   task: Task
