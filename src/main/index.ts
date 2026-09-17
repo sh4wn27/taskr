@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, globalShortcut, ipcMain, nativeImage, Notification, powerMonitor, powerSaveBlocker } from 'electron'
+import { app, BrowserWindow, Tray, globalShortcut, ipcMain, nativeImage, Notification, powerMonitor } from 'electron'
 import { join } from 'path'
 import { deflateSync } from 'zlib'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
@@ -126,6 +126,16 @@ function createWindow() {
     console.error(`[taskr] failed to load: ${code} ${desc}`)
   })
 
+  // If the renderer crashes, the tray icon and window keep existing but
+  // toggling shows a blank window — indistinguishable from "clicking does
+  // nothing." Rebuild the window instead of leaving it in that state.
+  win.webContents.on('render-process-gone', (_, details) => {
+    console.error(`[taskr] renderer gone: ${details.reason}`)
+    win?.destroy()
+    win = null
+    createWindow()
+  })
+
   // Only auto-hide on blur in production (dev DevTools would trigger it)
   if (!isDev) {
     win.on('blur', () => setTimeout(() => { if (!win?.isFocused()) win?.hide() }, 150))
@@ -189,15 +199,10 @@ app.whenReady().then(() => {
 
   registerShortcut()
 
-  // A menu-bar-only app with no visible window and no active power
-  // assertions is exactly what macOS App Nap targets: over hours of being
-  // backgrounded, the process gets throttled enough that tray clicks and the
-  // global shortcut stop being serviced promptly. This assertion keeps the
-  // app from being nap-suspended for as long as it runs.
-  powerSaveBlocker.start('prevent-app-suspension')
-
-  // Belt-and-suspenders: re-arm the shortcut around every event that can
-  // interrupt the process (sleep/wake, screen lock/unlock).
+  // Re-arm the shortcut around every event that can interrupt the process
+  // (sleep/wake, screen lock/unlock). This costs nothing at idle — it only
+  // runs at the moment of waking — unlike holding a powerSaveBlocker, which
+  // would keep the whole Mac from idle-sleeping the entire time Taskr runs.
   powerMonitor.on('resume', registerShortcut)
   powerMonitor.on('unlock-screen', registerShortcut)
 
