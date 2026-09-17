@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, globalShortcut, ipcMain, nativeImage, Notification } from 'electron'
+import { app, BrowserWindow, Tray, globalShortcut, ipcMain, nativeImage, Notification, powerMonitor, powerSaveBlocker } from 'electron'
 import { join } from 'path'
 import { deflateSync } from 'zlib'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
@@ -165,6 +165,17 @@ function cancelScheduled(id: string) {
   if (t) { clearTimeout(t); scheduledReminders.delete(id) }
 }
 
+// ── Global shortcut (re)registration ─────────────────────────────────────────
+// macOS silently drops Electron's globalShortcut registration across sleep/wake
+// cycles (it's backed by the Carbon hotkey API, which doesn't survive every
+// wake reliably). Re-registering on every wake/unlock keeps it alive instead
+// of requiring a relaunch.
+
+function registerShortcut() {
+  globalShortcut.unregisterAll()
+  globalShortcut.register('CommandOrControl+Shift+Space', toggleWindow)
+}
+
 // ── App ready ─────────────────────────────────────────────────────────────────
 
 app.whenReady().then(() => {
@@ -176,7 +187,19 @@ app.whenReady().then(() => {
 
   createWindow()
 
-  globalShortcut.register('CommandOrControl+Shift+Space', toggleWindow)
+  registerShortcut()
+
+  // A menu-bar-only app with no visible window and no active power
+  // assertions is exactly what macOS App Nap targets: over hours of being
+  // backgrounded, the process gets throttled enough that tray clicks and the
+  // global shortcut stop being serviced promptly. This assertion keeps the
+  // app from being nap-suspended for as long as it runs.
+  powerSaveBlocker.start('prevent-app-suspension')
+
+  // Belt-and-suspenders: re-arm the shortcut around every event that can
+  // interrupt the process (sleep/wake, screen lock/unlock).
+  powerMonitor.on('resume', registerShortcut)
+  powerMonitor.on('unlock-screen', registerShortcut)
 
   // Reminders whose time already passed while the app was closed would
   // otherwise be silently dropped (scheduleReminder no-ops on delay <= 0) —
