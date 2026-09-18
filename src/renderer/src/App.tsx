@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import type { Task, Idea, Reminder, JournalEntry } from './lib/types'
+import type { Task, Idea, Reminder, JournalEntry, Scholarship } from './lib/types'
 import { Hub } from './components/Hub'
 import { TasksView } from './components/TasksView'
 import { IdeasView } from './components/IdeasView'
 import { RemindersView } from './components/RemindersView'
 import { JournalView } from './components/JournalView'
+import { ScholarshipsView } from './components/ScholarshipsView'
 import { ToastStack } from './components/ToastStack'
 import { useSoftDelete } from './lib/useSoftDelete'
 import { PRIORITY_ORDER } from './lib/priority'
 
-type View = 'hub' | 'tasks' | 'ideas' | 'reminders' | 'journal'
+type View = 'hub' | 'tasks' | 'ideas' | 'reminders' | 'journal' | 'scholarships'
 
 export default function App() {
   const [view, setView] = useState<View>('hub')
@@ -17,6 +18,7 @@ export default function App() {
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [reminders, setReminders] = useState<Reminder[]>([])
   const [journal, setJournal] = useState<JournalEntry[]>([])
+  const [scholarships, setScholarships] = useState<Scholarship[]>([])
   const [loaded, setLoaded] = useState(false)
   const windowRef = useRef<HTMLDivElement>(null)
   const { toasts, softDelete } = useSoftDelete()
@@ -26,12 +28,14 @@ export default function App() {
       window.api.getTasks(),
       window.api.getIdeas(),
       window.api.getReminders(),
-      window.api.getJournal()
-    ]).then(([t, i, r, j]) => {
+      window.api.getJournal(),
+      window.api.getScholarships()
+    ]).then(([t, i, r, j, s]) => {
       setTasks(t.sort((a, b) => a.order - b.order))
       setIdeas(i)
       setReminders(r)
       setJournal(j)
+      setScholarships(s)
       setLoaded(true)
     })
   }, [])
@@ -62,6 +66,7 @@ export default function App() {
         else if (e.key === '2') setView('ideas')
         else if (e.key === '3') setView('reminders')
         else if (e.key === '4') setView('journal')
+        else if (e.key === '5') setView('scholarships')
       }
     }
     window.addEventListener('keydown', handler)
@@ -114,10 +119,25 @@ export default function App() {
   // Journal handlers
   const saveJournal = useCallback(async (entry: JournalEntry) => setJournal(await window.api.saveJournal(entry)), [])
 
+  // Scholarship handlers
+  const addScholarship = useCallback(async (s: Scholarship) => setScholarships(await window.api.addScholarship(s)), [])
+  const updateScholarship = useCallback(async (id: string, u: Partial<Scholarship>) =>
+    setScholarships(await window.api.updateScholarship(id, u)), [])
+  const deleteScholarship = useCallback((id: string) => {
+    const scholarship = scholarships.find(s => s.id === id)
+    if (!scholarship) return
+    setScholarships(prev => prev.filter(s => s.id !== id))
+    softDelete(id, `deleted "${scholarship.name}"`,
+      () => setScholarships(prev => [...prev, scholarship]),
+      () => { window.api.deleteScholarship(id).then(setScholarships) }
+    )
+  }, [scholarships, softDelete])
+
   const today = new Date().toISOString().split('T')[0]
   const activeTasks = tasks.filter(t => !t.completed).length
   const upcomingReminders = reminders.filter(r => !r.completed && new Date(r.datetime) > new Date()).length
   const hasJournalToday = journal.some(e => e.date === today)
+  const activeScholarships = scholarships.filter(s => s.checklist.length === 0 || s.checklist.some(i => !i.completed)).length
 
   // Main-page "up next": dated tasks soonest-due first (ties broken by priority),
   // then undated tasks by priority, capped at 5.
@@ -151,6 +171,7 @@ export default function App() {
               ideaCount={ideas.length}
               upcomingReminders={upcomingReminders}
               hasJournalToday={hasJournalToday}
+              activeScholarships={activeScholarships}
               upNextTasks={upNextTasks}
             />
           )}
@@ -165,6 +186,9 @@ export default function App() {
           )}
           {view === 'journal' && (
             <JournalView entries={journal} onSave={saveJournal} />
+          )}
+          {view === 'scholarships' && (
+            <ScholarshipsView scholarships={scholarships} onAdd={addScholarship} onUpdate={updateScholarship} onDelete={deleteScholarship} />
           )}
         </div>
 

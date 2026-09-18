@@ -2,7 +2,7 @@ import { app, BrowserWindow, Tray, globalShortcut, ipcMain, nativeImage, Notific
 import { join } from 'path'
 import { deflateSync } from 'zlib'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
-import type { AppStore, Task, Idea, Reminder, JournalEntry } from '../shared/types'
+import type { AppStore, Task, Idea, Reminder, JournalEntry, Scholarship } from '../shared/types'
 
 if (!app.requestSingleInstanceLock()) { app.quit(); process.exit(0) }
 
@@ -10,7 +10,7 @@ app.dock?.hide()
 
 // ── Simple file-based store (no external deps, no CJS/ESM issues) ─────────────
 
-const DEFAULTS: AppStore = { tasks: [], ideas: [], reminders: [], journal: [] }
+const DEFAULTS: AppStore = { tasks: [], ideas: [], reminders: [], journal: [], scholarships: [] }
 let _cache: AppStore | null = null
 
 function storePath() {
@@ -297,6 +297,23 @@ ipcMain.handle('reminders:update', (_, id: string, u: Partial<Reminder>) => {
 
 ipcMain.handle('reminders:delete', (_, id: string) => {
   cancelScheduled(id); const reminders = storeGet('reminders').filter(r => r.id !== id); storeSet('reminders', reminders); return reminders
+})
+
+// ── IPC: Scholarships ─────────────────────────────────────────────────────────
+
+ipcMain.handle('scholarships:get', () => storeGet('scholarships'))
+
+ipcMain.handle('scholarships:add', (_, scholarship: Scholarship) => {
+  const scholarships = [...storeGet('scholarships'), scholarship]; storeSet('scholarships', scholarships); return scholarships
+})
+
+ipcMain.handle('scholarships:update', (_, id: string, u: Partial<Scholarship>) => {
+  const scholarships = storeGet('scholarships').map(s => s.id === id ? { ...s, ...u } : s)
+  storeSet('scholarships', scholarships); return scholarships
+})
+
+ipcMain.handle('scholarships:delete', (_, id: string) => {
+  const scholarships = storeGet('scholarships').filter(s => s.id !== id); storeSet('scholarships', scholarships); return scholarships
 })
 
 // ── IPC: Journal ──────────────────────────────────────────────────────────────

@@ -21,6 +21,11 @@ declare global {
       getJournal: () => Promise<import('../../shared/types').JournalEntry[]>
       saveJournal: (e: import('../../shared/types').JournalEntry) => Promise<import('../../shared/types').JournalEntry[]>
 
+      getScholarships: () => Promise<import('../../shared/types').Scholarship[]>
+      addScholarship: (s: import('../../shared/types').Scholarship) => Promise<import('../../shared/types').Scholarship[]>
+      updateScholarship: (id: string, u: Partial<import('../../shared/types').Scholarship>) => Promise<import('../../shared/types').Scholarship[]>
+      deleteScholarship: (id: string) => Promise<import('../../shared/types').Scholarship[]>
+
       hideWindow: () => Promise<void>
       onWindowShown: (cb: () => void) => () => void
     }

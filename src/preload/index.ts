@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { Task, Idea, Reminder, JournalEntry } from '../shared/types'
+import type { Task, Idea, Reminder, JournalEntry, Scholarship } from '../shared/types'
 
 contextBridge.exposeInMainWorld('api', {
   // Tasks
@@ -23,6 +23,12 @@ contextBridge.exposeInMainWorld('api', {
   // Journal
   getJournal: (): Promise<JournalEntry[]> => ipcRenderer.invoke('journal:get'),
   saveJournal: (entry: JournalEntry): Promise<JournalEntry[]> => ipcRenderer.invoke('journal:save', entry),
+
+  // Scholarships
+  getScholarships: (): Promise<Scholarship[]> => ipcRenderer.invoke('scholarships:get'),
+  addScholarship: (s: Scholarship): Promise<Scholarship[]> => ipcRenderer.invoke('scholarships:add', s),
+  updateScholarship: (id: string, u: Partial<Scholarship>): Promise<Scholarship[]> => ipcRenderer.invoke('scholarships:update', id, u),
+  deleteScholarship: (id: string): Promise<Scholarship[]> => ipcRenderer.invoke('scholarships:delete', id),
 
   // Window
   hideWindow: (): Promise<void> => ipcRenderer.invoke('window:hide'),

@@ -800,3 +800,90 @@ select:focus-visible {
   letter-spacing: 0.03em;
 }
 .toast-undo:hover { opacity: 0.8; }
+
+/* ── Scholarships ────────────────────────────────────────── */
+.scholarship-card {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  animation: item-in 160ms ease;
+}
+.scholarship-card:last-child { border-bottom: none; }
+
+.scholarship-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.scholarship-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--pink);
+  transition: width 0.15s ease;
+}
+
+.progress-label {
+  font-size: 9px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0 3px 2px;
+}
+.checklist-item .del-btn { opacity: 0; transition: opacity 0.15s; margin-left: auto; flex-shrink: 0; }
+.checklist-item:hover .del-btn { opacity: 1; }
+
+.checklist-text {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.checklist-text.struck { text-decoration: line-through; color: var(--muted); }
+
+.add-step-form { margin-top: 4px; }
+
+.add-step-input {
+  width: 100%;
+  font-size: 11px;
+  font-family: var(--font);
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 7px;
+  outline: none;
+}
+.add-step-input:focus { border-color: rgba(255,45,120,0.4); background: rgba(255,255,255,0.06); }
+.add-step-input::placeholder { color: var(--muted); }

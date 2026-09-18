@@ -43,9 +43,24 @@ export interface JournalEntry {
   updatedAt: string
 }
 
+export interface ChecklistItem {
+  id: string
+  text: string
+  completed: boolean
+}
+
+export interface Scholarship {
+  id: string
+  name: string
+  dueDate: string // YYYY-MM-DD
+  checklist: ChecklistItem[]
+  createdAt: string
+}
+
 export interface AppStore {
   tasks: Task[]
   ideas: Idea[]
   reminders: Reminder[]
   journal: JournalEntry[]
+  scholarships: Scholarship[]
 }

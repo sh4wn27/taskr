@@ -2,7 +2,7 @@ import type { Task } from '../lib/types'
 import { fmtDue } from '../lib/dueDate'
 import { PRI_CLR } from '../lib/priority'
 
-type NavView = 'tasks' | 'ideas' | 'reminders' | 'journal'
+type NavView = 'tasks' | 'ideas' | 'reminders' | 'journal' | 'scholarships'
 
 interface Props {
   onNavigate: (v: NavView) => void
@@ -10,6 +10,7 @@ interface Props {
   ideaCount: number
   upcomingReminders: number
   hasJournalToday: boolean
+  activeScholarships: number
   upNextTasks: Task[]
 }
 
@@ -18,14 +19,16 @@ const ROWS: { key: string; view: NavView; label: string }[] = [
   { key: '2', view: 'ideas', label: 'ideas' },
   { key: '3', view: 'reminders', label: 'reminders' },
   { key: '4', view: 'journal', label: 'journal' },
+  { key: '5', view: 'scholarships', label: 'scholarships' },
 ]
 
-export function Hub({ onNavigate, activeTasks, ideaCount, upcomingReminders, hasJournalToday, upNextTasks }: Props) {
+export function Hub({ onNavigate, activeTasks, ideaCount, upcomingReminders, hasJournalToday, activeScholarships, upNextTasks }: Props) {
   const metas = [
     activeTasks > 0 ? `${activeTasks} active` : 'clear',
     ideaCount > 0 ? `${ideaCount} notes` : 'empty',
     upcomingReminders > 0 ? `${upcomingReminders} set` : 'none',
     hasJournalToday ? 'written today' : 'not yet',
+    activeScholarships > 0 ? `${activeScholarships} active` : 'clear',
   ]
 
   return (
@@ -53,7 +56,7 @@ export function Hub({ onNavigate, activeTasks, ideaCount, upcomingReminders, has
           <span className="hub-arrow">→</span>
         </button>
       ))}
-      <div className="hub-hint">press 1–4 to navigate · esc to close</div>
+      <div className="hub-hint">press 1–5 to navigate · esc to close</div>
     </div>
   )
 }

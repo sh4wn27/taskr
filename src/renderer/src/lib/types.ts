@@ -1,1 +1,1 @@
-export type { Category, Priority, Task, Idea, Reminder, JournalEntry, AppStore } from '../../../shared/types'
+export type { Category, Priority, Task, Idea, Reminder, JournalEntry, ChecklistItem, Scholarship, AppStore } from '../../../shared/types'

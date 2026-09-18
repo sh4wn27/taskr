@@ -1,4 +1,4 @@
-import type { Task, Idea, Reminder, JournalEntry, AppStore } from './types'
+import type { Task, Idea, Reminder, JournalEntry, Scholarship, AppStore } from './types'
 
 const KEY = 'taskr-browser-mock'
 
@@ -9,7 +9,7 @@ function load(): AppStore {
   } catch {
     // ignore
   }
-  return { tasks: [], ideas: [], reminders: [], journal: [] }
+  return { tasks: [], ideas: [], reminders: [], journal: [], scholarships: [] }
 }
 
 const store = load()
@@ -55,6 +55,13 @@ export function installBrowserMock() {
       persist()
       return store.journal
     },
+
+    getScholarships: async () => store.scholarships,
+    addScholarship: async (s: Scholarship) => { store.scholarships = [...store.scholarships, s]; persist(); return store.scholarships },
+    updateScholarship: async (id: string, u: Partial<Scholarship>) => {
+      store.scholarships = store.scholarships.map(s => s.id === id ? { ...s, ...u } : s); persist(); return store.scholarships
+    },
+    deleteScholarship: async (id: string) => { store.scholarships = store.scholarships.filter(s => s.id !== id); persist(); return store.scholarships },
 
     hideWindow: async () => { console.log('[browser mock] hideWindow()') },
     onWindowShown: (cb: () => void) => {
