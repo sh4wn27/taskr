@@ -7,7 +7,9 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "start": "electron-vite dev"
+    "start": "electron-vite dev",
+    "restart": "launchctl kickstart -k gui/$(id -u)/com.shawn.taskr",
+    "rebuild": "npm run build && npm run restart"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

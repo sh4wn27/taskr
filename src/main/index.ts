@@ -186,6 +186,32 @@ function registerShortcut() {
   globalShortcut.register('CommandOrControl+Shift+Space', toggleWindow)
 }
 
+// ── Daily self-restart ────────────────────────────────────────────────────────
+// After long uptime with many sleep/wake cycles, this app's connection to the
+// WindowServer session can silently degrade: the process stays alive and its
+// run loop stays idle-healthy (confirmed via `sample`), but neither tray
+// clicks nor the Carbon-backed global shortcut get delivered anymore — even
+// right after re-registering the shortcut, which ruled out a
+// registration-specific bug. Re-registering on wake (above) isn't enough to
+// fix that class of problem. Since all state is already persisted to disk,
+// a full relaunch at a quiet hour is cheap insurance and clears whatever
+// degraded OS-level state accumulated, instead of chasing which exact API
+// silently stops working.
+
+function msUntilNextRestartHour(hour: number): number {
+  const next = new Date()
+  next.setHours(hour, 0, 0, 0)
+  if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1)
+  return next.getTime() - Date.now()
+}
+
+// Exit only — the LaunchAgent's KeepAlive relaunches it immediately, which
+// keeps this the same launchd-managed job (so `launchctl kickstart` and
+// `launchctl list` keep working) instead of orphaning a self-relaunched copy.
+function scheduleDailyRestart() {
+  setTimeout(() => app.exit(0), msUntilNextRestartHour(4))
+}
+
 // ── App ready ─────────────────────────────────────────────────────────────────
 
 app.whenReady().then(() => {
@@ -205,6 +231,8 @@ app.whenReady().then(() => {
   // would keep the whole Mac from idle-sleeping the entire time Taskr runs.
   powerMonitor.on('resume', registerShortcut)
   powerMonitor.on('unlock-screen', registerShortcut)
+
+  scheduleDailyRestart()
 
   // Reminders whose time already passed while the app was closed would
   // otherwise be silently dropped (scheduleReminder no-ops on delay <= 0) —
